@@ -68,6 +68,14 @@ exports.handleMessage = async (ws, req) => {
       const nvrWs = nvrConnections.get(nvrIp);
       if (nvrWs) {
         nvrWs.send(JSON.stringify(data)); // Send message to specific NVR
+        const chat = new Chat({
+          message: data.RequestURL,
+          ip: nvrIp,
+          sender: "server",
+          status: "done",
+        });
+        await chat.save();
+        return;
       } else {
         console.log("NVR with IP " + nvrIp + " is not connected.");
         ws.send(
@@ -75,17 +83,7 @@ exports.handleMessage = async (ws, req) => {
             message: "NVR with IP " + nvrIp + " is not online.",
             type: "error",
           })
-        ).then(async () => {
-          const chat = new Chat({
-            message: data.RequestURL,
-            ip: nvrIp,
-            sender: "server",
-            status: "done",
-          });
-          await chat.save();
-        });
-
-        await chat.save();
+        );
       }
     });
     ws.on("close", () => {
