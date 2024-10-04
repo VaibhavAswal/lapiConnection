@@ -46,7 +46,7 @@ exports.handleMessage = async (ws, req) => {
         // Handling other messages
         //   console.log("Message received:" + JSON.stringify(data));
         const chat = new Chat({
-          message: data.RequestURL,
+          message: data,
           ip: clientIP,
           sender: "nvr",
           status: "processing",
@@ -68,6 +68,7 @@ exports.handleMessage = async (ws, req) => {
       const nvrWs = nvrConnections.get(nvrIp);
       if (nvrWs) {
         nvrWs.send(JSON.stringify(data.message)); // Send message to specific NVR
+        console.log(data.message);
         const chat = new Chat({
           message: data.message,
           ip: nvrIp,
