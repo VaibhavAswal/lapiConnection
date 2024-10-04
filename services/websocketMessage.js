@@ -4,6 +4,9 @@ const Chat = require("../models/chatModel");
 const LAPI_REGISTER = "/LAPI/V1.0/System/UpServer/Register";
 const LAPI_KEEPALIVE = "/LAPI/V1.0/System/UpServer/Keepalive";
 const LAPI_UNREGISTER = "/LAPI/V1.0/System/UpServer/Unregister";
+const LIVES = 60;
+
+const nvrConnections = new Map();
 
 function handleKeepAlive(ws, data, clientIP) {
   const websocketRsp = {
@@ -27,13 +30,7 @@ exports.handleMessage = async (ws, req) => {
 
   const nvr = await Nvr.findOne({ Ip: clientIP });
   if (nvr) {
-    // const deviceInfoRequest = {
-    //   RequestURL: "/LAPI/V1.0/System/DeviceInfo",
-    //   Method: "GET",
-    //   Cseq: 1,
-    //   Data: null,
-    // };
-    // ws.send(JSON.stringify(deviceInfoRequest));
+    nvrConnections.set(clientIP, ws);
     ws.on("message", async (message) => {
       const data = JSON.parse(message);
       const uri = data.RequestURL;
@@ -50,7 +47,8 @@ exports.handleMessage = async (ws, req) => {
         //   console.log("Message received:" + JSON.stringify(data));
         const chat = new Chat({
           message: data.RequestURL,
-          sender: clientIP,
+          ip: clientIP,
+          sender: "nvr",
           status: "processing",
         });
         await chat.save();
@@ -60,6 +58,38 @@ exports.handleMessage = async (ws, req) => {
     ws.on("close", async () => {
       console.log("The client disconnects:" + clientIP + "\n");
       await Nvr.findOneAndUpdate({ Ip: clientIP }, { Status: "Offline" });
+    });
+  } else {
+    ws.on("message", async (message) => {
+      const data = JSON.parse(message);
+      const nvrIp = data.deviceIp;
+
+      // Retrieve the WebSocket connection for the specific NVR IP
+      const nvrWs = nvrConnections.get(nvrIp);
+      if (nvrWs) {
+        nvrWs.send(JSON.stringify(data)); // Send message to specific NVR
+      } else {
+        console.log("NVR with IP " + nvrIp + " is not connected.");
+        ws.send(
+          JSON.stringify({
+            message: "NVR with IP " + nvrIp + " is not online.",
+            type: "error",
+          })
+        ).then(async () => {
+          const chat = new Chat({
+            message: data.RequestURL,
+            ip: nvrIp,
+            sender: "server",
+            status: "done",
+          });
+          await chat.save();
+        });
+
+        await chat.save();
+      }
+    });
+    ws.on("close", () => {
+      console.log("User disconnects:" + clientIP + "\n");
     });
   }
 

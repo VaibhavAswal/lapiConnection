@@ -15,6 +15,7 @@ const lapiRoute = require("./routes/lapiRoute");
 const errorHandler = require("./middleware/errorHandler");
 const { wssRegister } = require("./controllers/lapiController");
 const { handleMessage } = require("./services/websocketMessage");
+const { userRegister } = require("./controllers/authController");
 
 require("dotenv").config();
 
@@ -66,7 +67,8 @@ function onSocketError(err) {
 server.on("upgrade", function upgrade(req, socket, head) {
   socket.on("error", onSocketError);
   socket.removeListener("error", onSocketError);
-  wssRegister(req, socket, wss)
+  wssRegister(req, socket, wss);
+  userRegister(req, socket, wss);
 });
 
 app.use(errorHandler);
