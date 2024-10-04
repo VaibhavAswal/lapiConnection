@@ -67,9 +67,9 @@ exports.handleMessage = async (ws, req) => {
       // Retrieve the WebSocket connection for the specific NVR IP
       const nvrWs = nvrConnections.get(nvrIp);
       if (nvrWs) {
-        nvrWs.send(JSON.stringify(data)); // Send message to specific NVR
+        nvrWs.send(JSON.stringify(data.message)); // Send message to specific NVR
         const chat = new Chat({
-          message: data.RequestURL,
+          message: data.message,
           ip: nvrIp,
           sender: "server",
           status: "done",
@@ -77,7 +77,6 @@ exports.handleMessage = async (ws, req) => {
         await chat.save();
         return;
       } else {
-        console.log("NVR with IP " + nvrIp + " is not connected.");
         ws.send(
           JSON.stringify({
             message: "NVR with IP " + nvrIp + " is not online.",
