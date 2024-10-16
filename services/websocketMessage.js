@@ -41,7 +41,7 @@ exports.sendMsg = (msg, ip) => {
       Cseq: 1,
       Data: {},
     };
-    nvrWs.send(formattedMsg);
+    nvrWs.send(JSON.stringify(formattedMsg));
     return true;
   } else {
     console.log("NVR with IP " + ip + " is not online.");

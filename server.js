@@ -92,8 +92,7 @@ app.use(
 
     if (result){
       res.status(200).json({
-        message: "Analytics started.",
-        chat,
+        message: "Analytics started."
       });
     } else {
       res.status(503).json({
