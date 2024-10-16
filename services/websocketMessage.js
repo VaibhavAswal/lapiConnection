@@ -23,21 +23,25 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
   return newUrl;
 }
 
-// Function to convert time to Unix timestamp
-function getUnixTimestamp(dateStr, timeStr) {
+// Function to convert time to Unix timestamp with 6.5-hour delta
+function getUnixTimestamp(dateStr, timeStr, deltaHours = 6.5) {
   const date = new Date(dateStr); // Parse the date
-  const [time, modifier] = timeStr.split(" "); // Split time and AM/PM
-  let [hours, minutes] = time.split(":").map(Number);
+  const [time, modifier] = timeStr.split(' '); // Split time and AM/PM
+  let [hours, minutes] = time.split(':').map(Number);
 
   // Adjust hours based on AM/PM
-  if (modifier === "PM" && hours !== 12) hours += 12;
-  if (modifier === "AM" && hours === 12) hours = 0;
+  if (modifier === 'PM' && hours !== 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
 
   // Set the hours and minutes in the date object
   date.setHours(hours, minutes, 0, 0);
 
-  // Return the Unix timestamp in seconds
-  return Math.floor(date.getTime() / 1000);
+  // Add or subtract the delta (in seconds)
+  const deltaInSeconds = deltaHours * 3600; // Convert hours to seconds
+  const adjustedTimeInSeconds = Math.floor(date.getTime() / 1000) - deltaInSeconds;
+
+  // Return the adjusted Unix timestamp in seconds
+  return adjustedTimeInSeconds;
 }
 
 exports.sendMsg = (msg, ip) => {
