@@ -24,7 +24,7 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
 }
 
 // Function to convert time to Unix timestamp with 6.5-hour delta
-function getUnixTimestamp(dateStr, timeStr, deltaHours = 6.5) {
+function getUnixTimestamp(dateStr, timeStr, deltaHours = 0) {
   const date = new Date(dateStr); // Parse the date
   const [time, modifier] = timeStr.split(' '); // Split time and AM/PM
   let [hours, minutes] = time.split(':').map(Number);
