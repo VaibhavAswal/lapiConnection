@@ -30,8 +30,8 @@ function getUnixTimestamp(dateStr, timeStr, deltaHours = -5.5) {
   let [hours, minutes] = time.split(':').map(Number);
 
   // Adjust hours based on AM/PM
-  if (modifier === 'PM' && hours !== 12) hours += 12;
-  if (modifier === 'AM' && hours === 12) hours = 0;
+  if (modifier === 'P.M' && hours !== 12) hours += 12;
+  if (modifier === 'A.M' && hours === 12) hours = 0;
 
   // Set the hours and minutes in the date object
   date.setHours(hours, minutes, 0, 0);
