@@ -12,12 +12,12 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
   // Extract the current RTSP URL from the response object
   const currentUrl = responseObj.Data.URL;
 
-  // Extract the path after the IP from the URL
-  const urlParts = currentUrl.split('@').pop(); // Removes any existing username/password part if present
-  const path = urlParts.substring(urlParts.indexOf('/')); // Get everything after the IP
+  // Find the part of the URL after the IP and port (after ":554")
+  const pathIndex = currentUrl.indexOf(':554/');
+  const path = currentUrl.substring(pathIndex + 5); // Extract everything after ":554/"
 
   // Construct the new RTSP URL with username, password, and new IP
-  const newUrl = `rtsp://${username}:${password}@${newIp}:554${path}`;
+  const newUrl = `rtsp://${username}:${password}@${newIp}:554/${path}`;
 
   return newUrl;
 }
