@@ -79,7 +79,6 @@ app.use(
   "/startanalytics",
   tryCatch(async (req, res) => {
     const data = req.body;
-    console.log(data);
     const nvr = await nvrModel.findOne({ Ip: data.ip });
 
     if (!nvr) {
@@ -89,7 +88,7 @@ app.use(
       return;
     }
 
-    const result = sendMsg(JSON.stringify(data), data.ip);
+    const result = sendMsg(data, data.ip);
 
     if (result){
       res.status(200).json({

@@ -28,6 +28,7 @@ function getUnixTimestamp(dateStr, timeStr) {
 
 exports.sendMsg = (msg, ip) => {
   const nvrWs = nvrConnections.get(ip);
+  console.log(msg)
   if (nvrWs) {
     // nvrWs.send(JSON.stringify(msg));
     console.log("sending request to nvr: " + ip);
