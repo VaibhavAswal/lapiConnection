@@ -38,7 +38,7 @@ function getUnixTimestamp(dateStr, timeStr, deltaHours = 6.5) {
 
   // Add or subtract the delta (in seconds)
   const deltaInSeconds = deltaHours * 3600; // Convert hours to seconds
-  const adjustedTimeInSeconds = Math.floor(date.getTime() / 1000) - deltaInSeconds;
+  const adjustedTimeInSeconds = Math.floor(date.getTime() / 1000) + deltaInSeconds;
 
   // Return the adjusted Unix timestamp in seconds
   return adjustedTimeInSeconds;
