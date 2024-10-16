@@ -8,6 +8,19 @@ const LIVES = 60;
 
 const nvrConnections = new Map();
 let client;
+function updateRTSPUrl(responseObj, username, password, newIp) {
+  // Extract the current RTSP URL from the response object
+  const currentUrl = responseObj.Data.URL;
+
+  // Extract the path after the IP from the URL
+  const urlParts = currentUrl.split('@').pop(); // Removes any existing username/password part if present
+  const path = urlParts.substring(urlParts.indexOf('/')); // Get everything after the IP
+
+  // Construct the new RTSP URL with username, password, and new IP
+  const newUrl = `rtsp://${username}:${password}@${newIp}:554${path}`;
+
+  return newUrl;
+}
 
 // Function to convert time to Unix timestamp
 function getUnixTimestamp(dateStr, timeStr) {
@@ -99,7 +112,8 @@ exports.handleMessage = async (ws, req) => {
         // });
         // await chat.save();
         // client.send(JSON.stringify(message));
-        console.log("Message received:" + JSON.stringify(data));
+        // console.log("Message received:" + JSON.stringify(data));
+        console.log("Stream url :",updateRTSPUrl(data, "admin", "admin_123", nvr.Ip));
       }
     });
 
