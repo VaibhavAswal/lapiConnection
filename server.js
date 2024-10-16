@@ -12,10 +12,13 @@ const swaggerDocument = require("./docs/swagger.json");
 
 const authRoute = require("./routes/authRoute");
 const lapiRoute = require("./routes/lapiRoute");
+const dataRoute = require("./routes/dataRoute");
 const errorHandler = require("./middleware/errorHandler");
 const { wssRegister } = require("./controllers/lapiController");
-const { handleMessage } = require("./services/websocketMessage");
+const { handleMessage, sendMsg } = require("./services/websocketMessage");
 const { userRegister } = require("./controllers/authController");
+const { tryCatch } = require("./utils/tryCatch");
+const nvrModel = require("./models/nvrModel");
 
 require("dotenv").config();
 
@@ -54,6 +57,7 @@ connectDb();
 //routes
 app.use("/auth", authRoute);
 app.use("/LAPI/V1.0", lapiRoute);
+app.use("/data", dataRoute);
 
 // websocket server
 wss = new WebSocketServer({ server: app });
@@ -70,6 +74,35 @@ server.on("upgrade", function upgrade(req, socket, head) {
   wssRegister(req, socket, wss);
   userRegister(req, socket, wss);
 });
+
+app.use(
+  "/startanalytics",
+  tryCatch(async (req, res) => {
+    const data = req.body;
+    console.log(data);
+    const nvr = await nvrModel.findOne({ Ip: data.ip });
+
+    if (!nvr) {
+      res.status(404).json({
+        message: "NVR not found.",
+      });
+      return;
+    }
+
+    const result = sendMsg(JSON.stringify(data), data.ip);
+
+    if (result){
+      res.status(200).json({
+        message: "Analytics started.",
+        chat,
+      });
+    } else {
+      res.status(503).json({
+        message: "Camera not online.",
+      });
+    }
+  })
+);
 
 app.use(errorHandler);
 server.listen(PORT, () => {

@@ -73,7 +73,7 @@ exports.wssRegister = async (req, socket, wss) => {
       !Nonce ||
       !Sign
     ) {
-      console.log(clientIP + " " + "Trying to register...");
+      console.log(clientIP.split(':').pop() + " " + "Trying to register...");
       const nonce = getNonce();
       const response = {
         Nonce: nonce,
@@ -104,12 +104,12 @@ exports.wssRegister = async (req, socket, wss) => {
         socket.destroy();
         return;
       } else {
-        console.log(clientIP + " " + "Authentication Success");
+        console.log(clientIP.split(':').pop() + " " + "Authentication Success");
         wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
           wss.emit("connection", ws, req);
         });
         let nvr = await Nvr.findOneAndUpdate(
-          { Ip: clientIP },
+          { Ip: clientIP.split(':').pop() },
           {
             Status: "online",
             LastActive: Date.now(),
