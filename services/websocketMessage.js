@@ -14,8 +14,8 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
   console.log("local ip url :" + currentUrl)
 
   // Find the part of the URL after the IP and port (after ":554")
-  const pathIndex = currentUrl.indexOf(':554/');
-  const path = currentUrl.substring(pathIndex + 5); // Extract everything after ":554/"
+  const pathIndex = currentUrl?.indexOf(':554/');
+  const path = currentUrl?.substring(pathIndex + 5); // Extract everything after ":554/"
 
   // Construct the new RTSP URL with username, password, and new IP
   const newUrl = `rtsp://${username}:${password}@${newIp}:554/${path}`;
