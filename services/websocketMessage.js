@@ -54,7 +54,7 @@ exports.sendMsg = (msg, ip) => {
     const endTimestamp = getUnixTimestamp(msg.date, msg.time.end);
     const formattedMsg = {
       RequestURL:
-        `/LAPI/V1.0/Channels/1/Media/Video/Streams/RecordURL?Begin=${startTimestamp}&End=${endTimestamp}&Types=Normal&RelationOfTypes=AND&Position=Local&SessionID=123456&TransType=HTTP`,
+        `/LAPI/V1.0/Channels/${msg.channel}/Media/Video/Streams/RecordURL?Begin=${startTimestamp}&End=${endTimestamp}&Types=Normal&RelationOfTypes=AND&Position=Local&SessionID=123456&TransType=HTTP`,
       Method: "GET",
       Cseq: 1,
       Data: {},
