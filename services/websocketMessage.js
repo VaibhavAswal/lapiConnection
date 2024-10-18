@@ -10,7 +10,7 @@ const nvrConnections = new Map();
 let client;
 function updateRTSPUrl(responseObj, username, password, newIp) {
   // Extract the current RTSP URL from the response object
-  const currentUrl = responseObj.Data.URL;
+  const currentUrl = responseObj?.Data?.URL;
   console.log("local ip url :" + currentUrl)
 
   // Find the part of the URL after the IP and port (after ":554")
