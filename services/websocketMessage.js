@@ -118,7 +118,7 @@ exports.handleMessage = async (ws, req) => {
       } else {
         console.log(acadeIDCseq.get(data.Cseq));
         axios.post("http://urlsdfasf/startanalytics", {
-          streamUrl: updateRTSPUrl(data, acadeIDCseq.get(data.Cseq).username , acadeIDCseq.get(data.Cseq).password, clientIP.split(":").pop().Ip),
+          streamUrl: updateRTSPUrl(data, (acadeIDCseq.get(data.Cseq)).username , (acadeIDCseq.get(data.Cseq)).password, clientIP.split(":").pop()),
           academyId: acadeIDCseq.get(data.Cseq).academyId,
         }).then((res) => {
           console.log(`statusCode: ${res.statusCode}`);
@@ -129,7 +129,7 @@ exports.handleMessage = async (ws, req) => {
         acadeIDCseq.delete(data.Cseq);
         console.log(
           "Stream url :",
-          updateRTSPUrl(data, acadeIDCseq.get(data.Cseq).username , acadeIDCseq.get(data.Cseq).password, clientIP.split(":").pop().Ip)
+          updateRTSPUrl(data, (acadeIDCseq.get(data.Cseq)).username , (acadeIDCseq.get(data.Cseq)).password, clientIP.split(":").pop())
         );
       }
     });
