@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
@@ -10,15 +9,11 @@ const http = require("http");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./docs/swagger.json");
 
-const authRoute = require("./routes/authRoute");
 const lapiRoute = require("./routes/lapiRoute");
-const dataRoute = require("./routes/dataRoute");
 const errorHandler = require("./middleware/errorHandler");
 const { wssRegister } = require("./controllers/lapiController");
 const { handleMessage, sendMsg } = require("./services/websocketMessage");
-const { userRegister } = require("./controllers/authController");
 const { tryCatch } = require("./utils/tryCatch");
-const nvrModel = require("./models/nvrModel");
 
 require("dotenv").config();
 
@@ -35,29 +30,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors("*"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-const connectDb = () => {
-  mongoose.connect(process.env.MONGODB_CONNECTION_STRING).catch((err) => {
-    console.log(
-      `Failed to connect to mongo on startup - retrying in 5 sec\n${err}`
-    );
-    setTimeout(connectDb, 5000);
-  });
-};
-
-mongoose.connection.on("connected", () => {
-  console.log("Connected to MongoDB");
-});
-
-mongoose.connection.on("disconnected", () => {
-  console.log("Lost MongoDB connection Retrying...");
-});
-
-connectDb();
 
 //routes
-app.use("/auth", authRoute);
 app.use("/LAPI/V1.0", lapiRoute);
-app.use("/data", dataRoute);
 
 // websocket server
 wss = new WebSocketServer({ server: app });

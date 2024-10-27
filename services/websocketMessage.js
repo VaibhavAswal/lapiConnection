@@ -52,7 +52,11 @@ exports.sendMsg = (msg, ip) => {
     // nvrWs.send(JSON.stringify(msg));
     const acadID = msg.academy_id;
     newCseq = Math.floor(Math.random()*(999-100+1)+100)
-    acadeIDCseq.set( newCseq , acadID );
+    acadeIDCseq.set( newCseq , {
+      academyId: acadID,
+      password: msg.password,
+      username: msg.username,
+    } );
     console.log("sending request to nvr: " + ip);
     const startTimestamp = getUnixTimestamp(
       (dateStr = msg.date),
@@ -112,29 +116,16 @@ exports.handleMessage = async (ws, req) => {
         console.log(clientIP + "Device Disconnect");
         // Processing of write-off requests
       } else {
-        // Handling other messages
-        //   console.log("Message received:" + JSON.stringify(data));
-        // const chat = new Chat({
-        //   message: data,
-        //   ip: clientIP.split(':').pop(),
-        //   sender: "nvr",
-        //   status: "processing",
-        // });
-        // await chat.save();
-        // client.send(JSON.stringify(message));
-        // console.log("Message received:" + JSON.stringify(data));
-        // console.log("NetId" +  netIDCseq.get(data.Cseq));
         axios.post("http://urlsdfasf/startanalytics", {
-          streamUrl: updateRTSPUrl(data, "admin", "admin_123", clientIP.split(":").pop().Ip),
-          academyId: acadeIDCseq.get(data.Cseq),
+          streamUrl: updateRTSPUrl(data, acadeIDCseq.get(data.Cseq).username , acadeIDCseq.get(data.Cseq).password, clientIP.split(":").pop().Ip),
+          academyId: acadeIDCseq.get(data.Cseq).academyId,
         }).then((res) => {
           console.log(`statusCode: ${res.statusCode}`);
           console.log(res);
         }).catch((error) => {
-          console.error(error);
+          console.error(error?.message);
         });
         acadeIDCseq.delete(data.Cseq);
-        console.log(data);
         console.log(
           "Stream url :",
           updateRTSPUrl(data, "admin", "admin_123", clientIP.split(":").pop().Ip)

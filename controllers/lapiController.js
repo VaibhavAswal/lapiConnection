@@ -1,6 +1,5 @@
 const { tryCatch } = require("../utils/tryCatch");
 const crypto = require("crypto");
-const Nvr = require("../models/nvrModel");
 
 const LAPI_REGISTER = "/LAPI/V1.0/System/UpServer/Register";
 const LAPI_KEEPALIVE = "/LAPI/V1.0/System/UpServer/Keepalive";
@@ -108,17 +107,7 @@ exports.wssRegister = async (req, socket, wss) => {
         wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
           wss.emit("connection", ws, req);
         });
-        let nvr = await Nvr.findOneAndUpdate(
-          { Ip: clientIP.split(':').pop() },
-          {
-            Status: "online",
-            LastActive: Date.now(),
-            Vendor,
-            DeviceType,
-            DeviceCode,
-          },
-          { upsert: true, new: true }
-        );
+      
       }
     }
   }
