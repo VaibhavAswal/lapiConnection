@@ -116,6 +116,7 @@ exports.handleMessage = async (ws, req) => {
         console.log(clientIP + "Device Disconnect");
         // Processing of write-off requests
       } else {
+        console.log(acadeIDCseq.get(data.Cseq));
         axios.post("http://urlsdfasf/startanalytics", {
           streamUrl: updateRTSPUrl(data, acadeIDCseq.get(data.Cseq).username , acadeIDCseq.get(data.Cseq).password, clientIP.split(":").pop().Ip),
           academyId: acadeIDCseq.get(data.Cseq).academyId,
