@@ -116,22 +116,21 @@ exports.handleMessage = async (ws, req) => {
         console.log(clientIP + "Device Disconnect");
         // Processing of write-off requests
       } else {
-        const oldData = acadeIDCseq.get(data.Cseq);
-        console.log("old data : ", oldData);
+        const reqData = acadeIDCseq.get(data.Cseq);
         axios.post("http://urlsdfasf/startanalytics", {
-          streamUrl: updateRTSPUrl(data, oldData.username , oldData.password, clientIP.split(":").pop()),
-          academyId: acadeIDCseq.get(data.Cseq).academyId,
+          streamUrl: updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop()),
+          academyId: reqData.academyId,
         }).then((res) => {
           console.log(`statusCode: ${res.statusCode}`);
           console.log(res);
         }).catch((error) => {
           console.error(error?.message);
         });
-        acadeIDCseq.delete(data.Cseq);
         console.log(
           "Stream url :",
-          updateRTSPUrl(data, oldData.username , oldData.password, clientIP.split(":").pop())
+          updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop())
         );
+        acadeIDCseq.delete(data.Cseq);
       }
     });
 
