@@ -47,7 +47,6 @@ server.on("upgrade", function upgrade(req, socket, head) {
   socket.on("error", onSocketError);
   socket.removeListener("error", onSocketError);
   wssRegister(req, socket, wss);
-  userRegister(req, socket, wss);
 });
 
 app.use(
