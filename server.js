@@ -79,15 +79,6 @@ app.use(
   "/startanalytics",
   tryCatch(async (req, res) => {
     const data = req.body;
-    const nvr = await nvrModel.findOne({ Ip: data.ip });
-
-    if (!nvr) {
-      res.status(404).json({
-        message: "NVR not found.",
-      });
-      return;
-    }
-
     const result = sendMsg(data, data.ip);
 
     if (result){

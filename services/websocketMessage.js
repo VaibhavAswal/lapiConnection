@@ -1,5 +1,4 @@
-const Nvr = require("../models/nvrModel");
-const Chat = require("../models/chatModel");
+const axios = require("axios");
 
 const LAPI_REGISTER = "/LAPI/V1.0/System/UpServer/Register";
 const LAPI_KEEPALIVE = "/LAPI/V1.0/System/UpServer/Keepalive";
@@ -7,6 +6,7 @@ const LAPI_UNREGISTER = "/LAPI/V1.0/System/UpServer/Unregister";
 const LIVES = 60;
 
 const nvrConnections = new Map();
+const acadeIDCseq = new Map();
 let client;
 function updateRTSPUrl(responseObj, username, password, newIp) {
   // Extract the current RTSP URL from the response object
@@ -50,6 +50,9 @@ exports.sendMsg = (msg, ip) => {
   console.log(msg);
   if (nvrWs) {
     // nvrWs.send(JSON.stringify(msg));
+    const acadID = msg.academy_id;
+    newCseq = Math.floor(Math.random()*(999-100+1)+100)
+    acadeIDCseq.set( newCseq , acadID );
     console.log("sending request to nvr: " + ip);
     const startTimestamp = getUnixTimestamp(
       (dateStr = msg.date),
@@ -64,7 +67,7 @@ exports.sendMsg = (msg, ip) => {
     const formattedMsg = {
       RequestURL: `/LAPI/V1.0/Channels/${msg.channel}/Media/Video/Streams/RecordURL?Begin=${startTimestamp}&End=${endTimestamp}&Types=Normal&RelationOfTypes=AND&Position=Local&SessionID=123456&TransType=HTTP`,
       Method: "GET",
-      Cseq: 1,
+      Cseq: newCseq,
       Data: {},
     };
     nvrWs.send(JSON.stringify(formattedMsg));
@@ -97,8 +100,6 @@ exports.handleMessage = async (ws, req) => {
     clientIP.split(":").pop() + "is now online and Connected to system"
   );
 
-  const nvr = await Nvr.findOne({ Ip: clientIP.split(":").pop() });
-  if (nvr) {
     nvrConnections.set(clientIP.split(":").pop(), ws);
     ws.on("message", async (message) => {
       const data = JSON.parse(message);
@@ -109,10 +110,6 @@ exports.handleMessage = async (ws, req) => {
         handleKeepAlive(ws, data);
       } else if (uri === LAPI_UNREGISTER) {
         console.log(clientIP + "Device Disconnect");
-        await Nvr.findOneAndUpdate(
-          { Ip: clientIP.split(":").pop() },
-          { Status: "Offline" }
-        );
         // Processing of write-off requests
       } else {
         // Handling other messages
@@ -126,51 +123,28 @@ exports.handleMessage = async (ws, req) => {
         // await chat.save();
         // client.send(JSON.stringify(message));
         // console.log("Message received:" + JSON.stringify(data));
+        // console.log("NetId" +  netIDCseq.get(data.Cseq));
+        axios.post("http://urlsdfasf/startanalytics", {
+          streamUrl: updateRTSPUrl(data, "admin", "admin_123", clientIP.split(":").pop().Ip),
+          academyId: acadeIDCseq.get(data.Cseq),
+        }).then((res) => {
+          console.log(`statusCode: ${res.statusCode}`);
+          console.log(res);
+        }).catch((error) => {
+          console.error(error);
+        });
+        acadeIDCseq.delete(data.Cseq);
+        console.log(data);
         console.log(
           "Stream url :",
-          updateRTSPUrl(data, "admin", "admin_123", nvr.Ip)
+          updateRTSPUrl(data, "admin", "admin_123", clientIP.split(":").pop().Ip)
         );
       }
     });
 
     ws.on("close", async () => {
       console.log("The client disconnects:" + clientIP.split(":").pop() + "\n");
-      await Nvr.findOneAndUpdate(
-        { Ip: clientIP.split(":").pop() },
-        { Status: "Offline" }
-      );
     });
-  } else {
-    client = ws;
-    ws.on("message", async (message) => {
-      const data = JSON.parse(message);
-      const nvrIp = data.deviceIp;
-
-      // Retrieve the WebSocket connection for the specific NVR IP
-      const nvrWs = nvrConnections.get(nvrIp);
-      if (nvrWs) {
-        nvrWs.send(JSON.stringify(data.message)); // Send message to specific NVR
-        // const chat = new Chat({
-        //   message: data.message,
-        //   ip: nvrIp,
-        //   sender: "server",
-        //   status: "done",
-        // });
-        // await chat.save();
-        return;
-      } else {
-        ws.send(
-          JSON.stringify({
-            message: "NVR with IP " + nvrIp + " is not online.",
-            type: "error",
-          })
-        );
-      }
-    });
-    ws.on("close", () => {
-      console.log("User disconnects:" + clientIP.split(":").pop() + "\n");
-    });
-  }
 
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
