@@ -24,26 +24,24 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
 }
 
 // Function to convert time to Unix timestamp with 6.5-hour delta
-function getUnixTimestamp(dateStr, timeStr, delay = 0, deltaHours = -5.5) {
-  const date = new Date(dateStr); // Parse the date
-  const [time, modifier] = timeStr.split(" "); // Split time and AM/PM
-  let [hours, minutes] = time.split(":").map(Number);
+function getUnixTimestamp(dateTimeStr, delay = 0, deltaHours = -5.5) {
+  // Parse the date-time string (assumes format 'YYYY-MM-DD HH:mm:ss ±HHmm')
+  const date = new Date(dateTimeStr);
 
-  // Adjust hours based on AM/PM
-  if (modifier === "P.M" && hours !== 12) hours += 12;
-  if (modifier === "A.M" && hours === 12) hours = 0;
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date-time format");
+  }
 
-  // Set the hours and minutes in the date object
-  date.setHours(hours, minutes, 0, 0);
-
-  // Add or subtract the delta (in seconds)
-  const deltaInSeconds = deltaHours * 3600; // Convert hours to seconds
+  // Convert deltaHours to seconds
+  const deltaInSeconds = deltaHours * 3600;
+  
+  // Calculate the Unix timestamp with adjustments
   const adjustedTimeInSeconds =
     Math.floor(date.getTime() / 1000) + deltaInSeconds + delay;
 
-  // Return the adjusted Unix timestamp in seconds
   return adjustedTimeInSeconds;
 }
+
 
 exports.sendMsg = (msg, ip) => {
   const nvrWs = nvrConnections.get(ip);
@@ -54,18 +52,16 @@ exports.sendMsg = (msg, ip) => {
     newCseq = Math.floor(Math.random()*(999-100+1)+100)
     acadeIDCseq.set( newCseq , {
       academyId: acadID,
-      password: msg.password,
-      username: msg.username,
+      password: msg.nvr_password,
+      username: msg.nvr_user_name,
     } );
     console.log("sending request to nvr: " + ip);
     const startTimestamp = getUnixTimestamp(
-      (dateStr = msg.date),
-      (timeStr = msg.time.start),
+      (dateTimeStr = msg.time.start),
       (delay = msg.delay)
     );
     const endTimestamp = getUnixTimestamp(
-      (dateStr = msg.date),
-      (timeStr = msg.time.end),
+      (dateTimeStr = msg.time.end),
       (delay = msg.delay)
     );
     const formattedMsg = {
