@@ -13,6 +13,7 @@ const lapiRoute = require("./routes/lapiRoute");
 const errorHandler = require("./middleware/errorHandler");
 const { wssRegister } = require("./controllers/lapiController");
 const { handleMessage, sendMsg } = require("./services/websocketMessage");
+// const { userRegister } = require("./controllers/userController");
 const { tryCatch } = require("./utils/tryCatch");
 
 require("dotenv").config();
@@ -47,13 +48,14 @@ server.on("upgrade", function upgrade(req, socket, head) {
   socket.on("error", onSocketError);
   socket.removeListener("error", onSocketError);
   wssRegister(req, socket, wss);
+  // userRegister(req, socket, wss);
 });
 
 app.use(
   "/startanalytics",
   tryCatch(async (req, res) => {
     const data = req.body;
-    const result = sendMsg(data, data.ip);
+    const result = sendMsg(data, data.nvr_ip);
 
     if (result){
       res.status(200).json({

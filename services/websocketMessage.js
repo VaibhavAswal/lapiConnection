@@ -117,9 +117,9 @@ exports.handleMessage = async (ws, req) => {
         // Processing of write-off requests
       } else {
         const reqData = acadeIDCseq.get(data.Cseq);
-        axios.post("http://urlsdfasf/startanalytics", {
+        axios.post("https://staging-api-v1.techatplay.ai/external/manage_analytics", {
           streamUrl: updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop()),
-          academyId: reqData.academyId,
+          academy_id: reqData.academyId,
         }).then((res) => {
           console.log(`statusCode: ${res.statusCode}`);
           console.log(res);
