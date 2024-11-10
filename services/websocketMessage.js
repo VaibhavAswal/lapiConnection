@@ -52,6 +52,7 @@ exports.sendMsg = (msg, ip) => {
     newCseq = Math.floor(Math.random()*(999-100+1)+100)
     acadeIDCseq.set( newCseq , {
       academyId: acadID,
+      streaming_setting_id: msg.streaming_setting_id,
       password: msg.nvr_password,
       username: msg.nvr_user_name,
     } );
@@ -116,6 +117,7 @@ exports.handleMessage = async (ws, req) => {
         axios.post("https://staging-api-v1.techatplay.ai/external/manage_analytics", {
           streamUrl: updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop()),
           academy_id: reqData.academyId,
+          streaming_setting_id: reqData.streaming_setting_id,
         }).then((res) => {
           console.log(`statusCode: ${res.statusCode}`);
           console.log(res);
