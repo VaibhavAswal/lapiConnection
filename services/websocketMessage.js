@@ -34,7 +34,7 @@ function getUnixTimestamp(dateTimeStr, delay = 0, deltaHours = -5.5) {
 
   // Convert deltaHours to seconds
   const deltaInSeconds = deltaHours * 3600;
-  
+
   // Calculate the Unix timestamp with adjustments
   const adjustedTimeInSeconds =
     Math.floor(date.getTime() / 1000) + deltaInSeconds + delay;
@@ -42,20 +42,19 @@ function getUnixTimestamp(dateTimeStr, delay = 0, deltaHours = -5.5) {
   return adjustedTimeInSeconds;
 }
 
-
 exports.sendMsg = (msg, ip) => {
   const nvrWs = nvrConnections.get(ip);
   console.log(msg);
   if (nvrWs) {
     // nvrWs.send(JSON.stringify(msg));
     const acadID = msg.academy_id;
-    newCseq = Math.floor(Math.random()*(999-100+1)+100)
-    acadeIDCseq.set( newCseq , {
+    newCseq = Math.floor(Math.random() * (999 - 100 + 1) + 100);
+    acadeIDCseq.set(newCseq, {
       academyId: acadID,
       streaming_setting_id: msg.streaming_setting_id,
       password: msg.nvr_password,
       username: msg.nvr_user_name,
-    } );
+    });
     console.log("sending request to nvr: " + ip);
     const startTimestamp = getUnixTimestamp(
       (dateTimeStr = msg.time.start),
@@ -101,9 +100,17 @@ exports.handleMessage = async (ws, req) => {
     clientIP.split(":").pop() + "is now online and Connected to system"
   );
 
-    nvrConnections.set(clientIP.split(":").pop(), ws);
-    ws.on("message", async (message) => {
+  nvrConnections.set(clientIP.split(":").pop(), ws);
+  ws.on("message", async (message) => {
+    if (nvrConnections.has(clientIP.split(":").pop())) {
       const data = JSON.parse(message);
+
+      if (data.updade) {
+        client = ws;
+        nvrConnections.delete(clientIP.split(":").pop());
+        ws.send(JSON.stringify({ message: "updated to client" }));
+      }
+
       const uri = data.RequestURL;
 
       if (uri === LAPI_KEEPALIVE) {
@@ -113,28 +120,56 @@ exports.handleMessage = async (ws, req) => {
         console.log(clientIP + "Device Disconnect");
         // Processing of write-off requests
       } else {
-        const reqData = acadeIDCseq.get(data.Cseq);
-        axios.post("https://staging-api-v1.techatplay.ai/external/manage_analytics", {
-          streamUrl: updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop()),
-          academy_id: reqData.academyId,
-          streaming_setting_id: reqData.streaming_setting_id,
-        }).then((res) => {
-          console.log(`statusCode: ${res.statusCode}`);
-          console.log(res);
-        }).catch((error) => {
-          console.error(error?.message);
-        });
-        console.log(
-          "Stream url :",
-          updateRTSPUrl(data, reqData.username , reqData.password, clientIP.split(":").pop())
-        );
-        acadeIDCseq.delete(data.Cseq);
+        // const reqData = acadeIDCseq.get(data.Cseq);
+        // axios
+        //   .post(
+        //     "https://staging-api-v1.techatplay.ai/external/manage_analytics",
+        //     {
+        //       streamUrl: updateRTSPUrl(
+        //         data,
+        //         reqData.username,
+        //         reqData.password,
+        //         clientIP.split(":").pop()
+        //       ),
+        //       academy_id: reqData.academyId,
+        //       streaming_setting_id: reqData.streaming_setting_id,
+        //     }
+        //   )
+        //   .then((res) => {
+        //     console.log(`statusCode: ${res.statusCode}`);
+        //     console.log(res);
+        //   })
+        //   .catch((error) => {
+        //     console.error(error?.message);
+        //   });
+        // console.log(
+        //   "Stream url :",
+        //   updateRTSPUrl(
+        //     data,
+        //     reqData.username,
+        //     reqData.password,
+        //     clientIP.split(":").pop()
+        //   )
+        // );
+        // acadeIDCseq.delete(data.Cseq);
+        client.send(JSON.stringify(data));
       }
-    });
+    } else {
+      // forward messaege to nvr with ip in message
+      const data = JSON.parse(message);
+      const ip = data.nvr_ip;
+      const nvrWs = nvrConnections.get(ip);
+      if (nvrWs) {
+        nvrWs.send(JSON.stringify(data));
+      } else {
+        console.log("NVR with IP " + ip + " is not online.");
+      }
+    }
+  });
 
-    ws.on("close", async () => {
-      console.log("The client disconnects:" + clientIP.split(":").pop() + "\n");
-    });
+  ws.on("close", async () => {
+    console.log("The client disconnects:" + clientIP.split(":").pop() + "\n");
+  });
 
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
