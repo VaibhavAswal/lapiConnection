@@ -109,6 +109,7 @@ exports.handleMessage = async (ws, req) => {
         client = ws;
         nvrConnections.delete(clientIP.split(":").pop());
         ws.send(JSON.stringify({ message: "updated to client" }));
+        return;
       }
 
       const uri = data.RequestURL;
