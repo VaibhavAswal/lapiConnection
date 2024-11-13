@@ -57,6 +57,7 @@ exports.wssRegister = async (req, socket, wss) => {
   const query = parsedUrl.query;
   const clientIP = req.connection.remoteAddress;
   if (req.method === "GET" && uri === LAPI_REGISTER) {
+    console.log(parsedUrl.query)
     const Vendor = query.Vendor;
     const DeviceType = query.DeviceType;
     const DeviceCode = query.DeviceCode;
