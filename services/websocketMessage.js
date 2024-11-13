@@ -99,21 +99,13 @@ exports.handleMessage = async (ws, req) => {
   console.log(
     clientIP.split(":").pop() + "is now online and Connected to system"
   );
-
+  
   nvrConnections.set(clientIP.split(":").pop(), ws);
   ws.on("message", async (message) => {
-    if (nvrConnections.has(clientIP.split(":").pop())) {
-      const data = JSON.parse(message);
-
-      if (data.updade) {
-        client = ws;
-        nvrConnections.delete(clientIP.split(":").pop());
-        ws.send(JSON.stringify({ message: "updated to client" }));
-        return;
-      }
-
-      const uri = data.RequestURL;
-
+    const data = JSON.parse(message);
+    const uri = data.RequestURL;
+    Cseq = data.Cseq;
+    if (!data.isClient) {
       if (uri === LAPI_KEEPALIVE) {
         // Processing of requests for preservation of live
         handleKeepAlive(ws, data);
@@ -121,50 +113,56 @@ exports.handleMessage = async (ws, req) => {
         console.log(clientIP + "Device Disconnect");
         // Processing of write-off requests
       } else {
-        // const reqData = acadeIDCseq.get(data.Cseq);
-        // axios
-        //   .post(
-        //     "https://staging-api-v1.techatplay.ai/external/manage_analytics",
-        //     {
-        //       streamUrl: updateRTSPUrl(
-        //         data,
-        //         reqData.username,
-        //         reqData.password,
-        //         clientIP.split(":").pop()
-        //       ),
-        //       academy_id: reqData.academyId,
-        //       streaming_setting_id: reqData.streaming_setting_id,
-        //     }
-        //   )
-        //   .then((res) => {
-        //     console.log(`statusCode: ${res.statusCode}`);
-        //     console.log(res);
-        //   })
-        //   .catch((error) => {
-        //     console.error(error?.message);
-        //   });
-        // console.log(
-        //   "Stream url :",
-        //   updateRTSPUrl(
-        //     data,
-        //     reqData.username,
-        //     reqData.password,
-        //     clientIP.split(":").pop()
-        //   )
-        // );
-        // acadeIDCseq.delete(data.Cseq);
-        client.send(JSON.stringify(data));
+        if (acadeIDCseq.has(Cseq)) {
+          const reqData = acadeIDCseq.get(data.Cseq);
+          axios
+            .post(
+              "https://staging-api-v1.techatplay.ai/external/manage_analytics",
+              {
+                streamUrl: updateRTSPUrl(
+                  data,
+                  reqData.username,
+                  reqData.password,
+                  clientIP.split(":").pop()
+                ),
+                academy_id: reqData.academyId,
+                streaming_setting_id: reqData.streaming_setting_id,
+              }
+            )
+            .then((res) => {
+              console.log(`statusCode: ${res.statusCode}`);
+              console.log(res);
+            })
+            .catch((error) => {
+              console.error(error?.message);
+            });
+          console.log(
+            "Stream url :",
+            updateRTSPUrl(
+              data,
+              reqData.username,
+              reqData.password,
+              clientIP.split(":").pop()
+            )
+          );
+          acadeIDCseq.delete(data.Cseq);
+        } else {
+          client.send(JSON.stringify(data));
+          // console.log(JSON.stringify(data));
+        }
       }
     } else {
-      // forward messaege to nvr with ip in message
-      const data = JSON.parse(message);
-      const ip = data.nvr_ip;
-      const nvrWs = nvrConnections.get(ip);
-      if (nvrWs) {
-        nvrWs.send(JSON.stringify(data));
-      } else {
-        console.log("NVR with IP " + ip + " is not online.");
+      if (!client){
+        client = ws;
       }
+      nvr = nvrConnections.get(data.ip);
+      if (!nvr) {
+        ws.send(JSON.stringify("NVR with IP " + data.ip + " is not online."));
+        return;
+      }
+      console.log(data.data)
+      console.log("sending to "+ data.ip);
+      nvr.send(JSON.stringify(data.data));
     }
   });
 
