@@ -54,6 +54,7 @@ exports.sendMsg = (msg, ip) => {
       streaming_setting_id: msg.streaming_setting_id,
       password: msg.nvr_password,
       username: msg.nvr_user_name,
+      schedular_id: msg.schedular_id,
     });
     console.log("sending request to nvr: " + ip);
     const startTimestamp = getUnixTimestamp(
@@ -65,7 +66,7 @@ exports.sendMsg = (msg, ip) => {
       (delay = msg.delay)
     );
     const formattedMsg = {
-      RequestURL: `/LAPI/V1.0/Channels/${msg.channel}/Media/Video/Streams/RecordURL?Begin=${startTimestamp}&End=${endTimestamp}&Types=Normal&RelationOfTypes=AND&Position=Local&SessionID=123456&TransType=HTTP`,
+      RequestURL: `/LAPI/V1.0/Channels/${msg.channel.trim()}/Media/Video/Streams/RecordURL?Begin=${startTimestamp}&End=${endTimestamp}&Types=Normal&RelationOfTypes=AND&Position=Local&SessionID=123456&TransType=HTTP`,
       Method: "GET",
       Cseq: newCseq,
       Data: {},
@@ -115,7 +116,9 @@ exports.handleMessage = async (ws, req) => {
       } else {
         if (acadeIDCseq.has(Cseq)) {
           const reqData = acadeIDCseq.get(data.Cseq);
-          console.log("url: https://staging-api-v1.techatplay.ai/external/manage_analytics")
+          console.log(
+            "url: https://staging-api-v1.techatplay.ai/external/manage_analytics"
+          );
           console.log({
             streamUrl: updateRTSPUrl(
               data,
@@ -125,6 +128,7 @@ exports.handleMessage = async (ws, req) => {
             ),
             academy_id: reqData.academyId,
             streaming_setting_id: reqData.streaming_setting_id,
+            schedular_id: reqData.schedular_id,
           });
           axios
             .post(
