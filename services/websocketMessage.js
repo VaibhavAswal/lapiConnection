@@ -99,7 +99,7 @@ exports.handleMessage = async (ws, req) => {
   console.log(
     clientIP.split(":").pop() + "is now online and Connected to system"
   );
-  
+
   nvrConnections.set(clientIP.split(":").pop(), ws);
   ws.on("message", async (message) => {
     const data = JSON.parse(message);
@@ -115,6 +115,17 @@ exports.handleMessage = async (ws, req) => {
       } else {
         if (acadeIDCseq.has(Cseq)) {
           const reqData = acadeIDCseq.get(data.Cseq);
+          console.log("url: https://staging-api-v1.techatplay.ai/external/manage_analytics")
+          console.log({
+            streamUrl: updateRTSPUrl(
+              data,
+              reqData.username,
+              reqData.password,
+              clientIP.split(":").pop()
+            ),
+            academy_id: reqData.academyId,
+            streaming_setting_id: reqData.streaming_setting_id,
+          });
           axios
             .post(
               "https://staging-api-v1.techatplay.ai/external/manage_analytics",
@@ -152,7 +163,7 @@ exports.handleMessage = async (ws, req) => {
         }
       }
     } else {
-      if (!client){
+      if (!client) {
         client = ws;
       }
       nvr = nvrConnections.get(data.ip);
@@ -160,8 +171,8 @@ exports.handleMessage = async (ws, req) => {
         ws.send(JSON.stringify("NVR with IP " + data.ip + " is not online."));
         return;
       }
-      console.log(data.data)
-      console.log("sending to "+ data.ip);
+      console.log(data.data);
+      console.log("sending to " + data.ip);
       nvr.send(JSON.stringify(data.data));
     }
   });
