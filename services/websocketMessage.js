@@ -24,7 +24,7 @@ function updateRTSPUrl(responseObj, username, password, newIp) {
 }
 
 // Function to convert time to Unix timestamp with 6.5-hour delta
-function getUnixTimestamp(dateTimeStr, delay = 0, deltaHours = -5.5) {
+function getUnixTimestamp(dateTimeStr, delay = 0, deltaHours = 0) {
   // Parse the date-time string (assumes format 'YYYY-MM-DD HH:mm:ss ±HHmm')
   const date = new Date(dateTimeStr);
 
