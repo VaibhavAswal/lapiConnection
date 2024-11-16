@@ -142,6 +142,7 @@ exports.handleMessage = async (ws, req) => {
                 ),
                 academy_id: reqData.academyId,
                 streaming_setting_id: reqData.streaming_setting_id,
+                schedular_id: reqData.schedular_id,
               }
             )
             .then((res) => {
