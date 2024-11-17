@@ -57,7 +57,7 @@ exports.wssRegister = async (req, socket, wss) => {
   const query = parsedUrl.query;
   const clientIP = req.connection.remoteAddress;
   if (req.method === "GET" && uri === LAPI_REGISTER) {
-    console.log(parsedUrl.query)
+    console.log(parsedUrl.query);
     const Vendor = query.Vendor;
     const DeviceType = query.DeviceType;
     const DeviceCode = query.DeviceCode;
@@ -73,7 +73,7 @@ exports.wssRegister = async (req, socket, wss) => {
       !Nonce ||
       !Sign
     ) {
-      console.log(clientIP.split(':').pop() + " " + "Trying to register...");
+      console.log(clientIP.split(":").pop() + " " + "Trying to register...");
       const nonce = getNonce();
       const response = {
         Nonce: nonce,
@@ -90,9 +90,9 @@ exports.wssRegister = async (req, socket, wss) => {
         .replace(/ /g, "+");
       const pstr = `${Vendor}/${DeviceType}/${DeviceCode}/${Algorithm}/${Nonce}`;
       const serverSign = generateHmacSHA256(pstr, process.env.LAPI_SECRET);
-      console.log(serverSign, decodedUrl);
+      // console.log(serverSign, decodedUrl);
       //  having signature issue until then it is false
-      if (false) {
+      if (serverSign !== decodedUrl) {
         console.log("Authentication failure:" + " " + clientIP);
         const response = {
           Nonce: getNonce(),
@@ -104,11 +104,10 @@ exports.wssRegister = async (req, socket, wss) => {
         socket.destroy();
         return;
       } else {
-        console.log(clientIP.split(':').pop() + " " + "Authentication Success");
+        console.log(clientIP.split(":").pop() + " " + "Authentication Success");
         wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
           wss.emit("connection", ws, req);
         });
-      
       }
     }
   }

@@ -146,8 +146,8 @@ exports.handleMessage = async (ws, req) => {
               }
             )
             .then((res) => {
-              console.log(`statusCode: ${res.statusCode}`);
-              console.log(res);
+              console.log(`axios response status code: ${res.statusCode}`);
+              // console.log(res);
             })
             .catch((error) => {
               console.error(error?.message);
