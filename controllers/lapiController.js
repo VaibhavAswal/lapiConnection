@@ -116,8 +116,8 @@ exports.wssRegister = async (req, socket, wss) => {
 
 exports.changeCameraAgl = async (req, res) => {
   const { channel, ip, preset } = req.body;
-  res = changeCameraAngle(channel, ip, preset);
-  if (res) {
+  result = changeCameraAngle(channel, ip, preset);
+  if (result) {
     res.status(200).json({ message: "Camera angle changed successfully" });
   } else {
     res.status(400).json({ message: "Camera angle change failed" });
