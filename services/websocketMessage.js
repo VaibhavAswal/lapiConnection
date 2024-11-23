@@ -163,12 +163,14 @@ exports.handleMessage = async (ws, req) => {
           );
           acadeIDCseq.delete(data.Cseq);
         } else {
-          client.send(JSON.stringify(data));
+          if (client) {
+            client.send(JSON.stringify(data));
+          }
           // console.log(JSON.stringify(data));
         }
       }
     } else {
-      if (!client) {
+      if (client !== ws) {
         client = ws;
       }
       nvr = nvrConnections.get(data.ip);
@@ -189,4 +191,21 @@ exports.handleMessage = async (ws, req) => {
   ws.on("error", (error) => {
     console.error("WebSocket error:", error);
   });
+};
+
+exports.changeCameraAngle = (channel, ip, preset) => {
+  const nvrWs = nvrConnections.get(ip);
+  if (nvrWs) {
+    const formattedMsg = {
+      RequestURL: `/LAPI/V1.0/Channels/${channel}/PTZ/Presets/${preset}/Goto`,
+      Method: "PUT",
+      Cseq: Math.floor(Math.random() * (999 - 100 + 1) + 100),
+      Data: {},
+    };
+    nvrWs.send(JSON.stringify(formattedMsg));
+    return true;
+  } else {
+    console.log("NVR with IP " + ip + " is not online.");
+    return false;
+  }
 };

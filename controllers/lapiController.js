@@ -5,6 +5,7 @@ const LAPI_REGISTER = "/LAPI/V1.0/System/UpServer/Register";
 const LAPI_KEEPALIVE = "/LAPI/V1.0/System/UpServer/Keepalive";
 const LAPI_UNREGISTER = "/LAPI/V1.0/System/UpServer/Unregister";
 const url = require("url");
+const { changeCameraAngle } = require("../services/websocketMessage");
 
 // Calculate the nonce value. nonce is used for authentication.
 function getNonce() {
@@ -110,5 +111,15 @@ exports.wssRegister = async (req, socket, wss) => {
         });
       }
     }
+  }
+};
+
+exports.changeCameraAgl = async (req, res) => {
+  const { channel, ip, preset } = req.body;
+  res = changeCameraAngle(channel, ip, preset);
+  if (res) {
+    res.status(200).json({ message: "Camera angle changed successfully" });
+  } else {
+    res.status(400).json({ message: "Camera angle change failed" });
   }
 };
