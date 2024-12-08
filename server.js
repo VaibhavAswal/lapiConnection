@@ -6,8 +6,6 @@ const cors = require("cors");
 const { WebSocketServer } = require("ws");
 const http = require("http");
 
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./docs/swagger.json");
 
 const lapiRoute = require("./routes/lapiRoute");
 const errorHandler = require("./middleware/errorHandler");
@@ -29,7 +27,7 @@ app.use(morgan("common"));
 app.use(bodyParser.json({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors("*"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 //routes
